@@ -1,0 +1,8 @@
+binary "https://www.mapbox.com/ios-sdk/Mapbox-iOS-SDK.json" "5.6.1"
+github "Daltron/NotificationBanner" "a852488c04c5bfdb32021711b3dde465ad0899ef"
+github "SnapKit/SnapKit" "5.0.1"
+github "cbpowell/MarqueeLabel" "4.0.2"
+github "mapbox/mapbox-events-ios" "v0.10.2"
+github "mapbox/turf-swift" "v0.3.0"
+github "xmartlabs/Eureka" "5.2.0"
+github "ydh1304/h3-ios-framework" "1.0.5"
