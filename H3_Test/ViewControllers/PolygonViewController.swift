@@ -3,7 +3,7 @@
 //  H3_Test
 //
 //  Created by Zachary Chandler on 2/8/20.
-//  Copyright © 2020 Routematch Software, Inc. All rights reserved.
+//  Copyright © 2020 Zachary Chandler All rights reserved.
 //
 
 import Foundation
@@ -23,7 +23,7 @@ class PolygonViewController: ExampleViewController {
             <<< StepperRow("Resolution") {
                 $0.title = "Res"
                 $0.value = Double(resolution)
-                $0.cellUpdate { (cell, row) in
+                $0.cellUpdate {[unowned self]  (cell, row) in
                     guard let v = row.value else { return }
                     self.resolution = Int32(v)
                 }
@@ -31,8 +31,8 @@ class PolygonViewController: ExampleViewController {
         
         <<< ButtonRow("Apply") {
             $0.title = "Apply"
-            $0.onCellSelection { (cell, row) in
-                DispatchQueue.main.async {
+            $0.onCellSelection {[unowned self]  (cell, row) in
+                DispatchQueue.main.async { [unowned self]  in
                     self.refreshMap()
                 }
             }
@@ -40,10 +40,10 @@ class PolygonViewController: ExampleViewController {
         
         <<< ButtonRow("Remove") {
             $0.title = "Remove Layer"
-            $0.onCellSelection { (cell, row) in
+            $0.onCellSelection { [unowned self]  (cell, row) in
                 cell.textLabel?.textColor = .red
                 cell.textLabel?.font = UIFont.boldSystemFont(ofSize: UIFont.preferredFont(forTextStyle: .body).pointSize)
-                DispatchQueue.main.async {
+                DispatchQueue.main.async {[unowned self] in
                     self.removeAllLayers()
                 }
             }
@@ -90,7 +90,7 @@ class PolygonViewController: ExampleViewController {
         
         removeAllLayers()
         
-        DispatchQueue.main.async {
+        DispatchQueue.main.async { [unowned self] in
             guard let style = self.mapView.style else { return }
             
             if let source = style.source(withIdentifier: "hex_linear") {

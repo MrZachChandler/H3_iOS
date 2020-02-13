@@ -3,7 +3,7 @@
 //  H3_Test
 //
 //  Created by Zachary Chandler on 11/9/19.
-//  Copyright © 2019 Routematch Software, Inc. All rights reserved.
+//  Copyright © 2019 Zachary Chandler All rights reserved.
 //
 
 import UIKit

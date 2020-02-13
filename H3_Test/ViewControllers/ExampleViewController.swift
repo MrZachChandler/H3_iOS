@@ -3,7 +3,7 @@
 //  H3_Test
 //
 //  Created by Zachary Chandler on 1/26/20.
-//  Copyright © 2020 Routematch Software, Inc. All rights reserved.
+//  Copyright © 2020 Zachary Chandler All rights reserved.
 //
 
 import Foundation
@@ -36,13 +36,21 @@ class ExampleViewController: FormViewController, H3MapDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         icon = UIImage(named: "port")
-        Style.shared.updateUIPreference()
+        Style.shared.updateUIPreference(traitCollection.userInterfaceStyle)
         addMapView()
         LocationManager.sharedManager.registerDelegate(self)
     }
     
-    deinit {
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidAppear(animated)
         LocationManager.sharedManager.unregisterDelegate(self)
+        mapView.removeFromSuperview()
+        mapView.delegate = nil
+        mapView = nil
+    }
+    
+    deinit {
+        print("deinit")
     }
     
     func addMapView() {
@@ -79,6 +87,7 @@ class ExampleViewController: FormViewController, H3MapDelegate {
             actView?.alpha = 0
             actView?.addSubview(activity!)
             activity?.startAnimating()
+            
             activity?.snp.makeConstraints({ (make) in
                 make.center.equalTo((actView?.snp.center)!)
             })
@@ -118,8 +127,7 @@ class ExampleViewController: FormViewController, H3MapDelegate {
         layer.forEach { (arg) in
             let (key , value) = arg
             let valueJSON = AnyJSONType(value)
-            let hex = AnyJSONType(key.toString())
-            features.append(H3.geojson2h3.h3ToFeature(key.toString(), ["value": valueJSON, "hex": hex]))
+            features.append(H3.geojson2h3.h3ToFeature(key.toString(), ["value": valueJSON]))
         }
         
         let collections = FeatureCollection(features)
@@ -133,7 +141,7 @@ class ExampleViewController: FormViewController, H3MapDelegate {
         features.forEach { (feature) in
             switch feature {
             case .polygonFeature(let poly):
-                DispatchQueue.main.async {
+                DispatchQueue.main.async { [unowned self] in
                     self.renderPolygonFeature(poly, source: source, style: style, addLineLayer: addLineLayer)
                 }
             default:
@@ -185,8 +193,6 @@ class ExampleViewController: FormViewController, H3MapDelegate {
         
         hexLayers?.forEach({ (l) in l.isVisible = false })
     }
-    
-    func showMemoryWarning() { showWarning(title: "Memory Warning", message: "Choose higher resolution") }
 }
 
 extension ExampleViewController : LocationManagerDelegate {
@@ -221,4 +227,19 @@ extension ExampleViewController: MGLMapViewDelegate {
     func mapViewDidBecomeIdle(_ mapView: MGLMapView) {
         
     }
+}
+
+extension ExampleViewController {
+    func showWarning(title: String, message: String) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            self.present(alert, animated: true, completion: nil)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                alert.dismiss(animated: true, completion: nil)
+            }
+        }
+    }
+    
+    func showMemoryWarning() { showWarning(title: "Memory Warning", message: "Choose higher resolution") }
 }

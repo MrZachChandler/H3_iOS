@@ -3,7 +3,7 @@
 //  H3_Test
 //
 //  Created by Zachary Chandler on 1/26/20.
-//  Copyright © 2020 Routematch Software, Inc. All rights reserved.
+//  Copyright © 2020 Zachary Chandler All rights reserved.
 //
 
 import Foundation
@@ -17,14 +17,15 @@ class LandingViewController: UITableViewController {
         super.viewDidLoad()
     
         title = "Examples"
-        Style.shared.updateUIPreference()
+        Style.shared.updateUIPreference(traitCollection.userInterfaceStyle)
+        navigationController?.navigationBar.titleTextAttributes
         tableView.register(ExampleTableViewCell.self, forCellReuseIdentifier: "Example")
     }
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
-        Style.shared.updateUIPreference()
+        Style.shared.updateUIPreference(traitCollection.userInterfaceStyle)
         tableView.reloadData()
     }
     
@@ -39,18 +40,7 @@ class LandingViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        navigationController?.pushViewController(examples[indexPath.row].viewController, animated: true)
-    }
-}
-
-extension UIViewController {
-    func showWarning(title: String, message: String) {
-        DispatchQueue.main.async {
-            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-            UIApplication.getTopViewController()?.present(alert, animated: true, completion: nil)
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                alert.dismiss(animated: true, completion: nil)
-            }
-        }
+        let vc = examples[indexPath.row].viewController
+        navigationController?.pushViewController(vc, animated: true)
     }
 }
