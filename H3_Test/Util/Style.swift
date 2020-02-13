@@ -3,7 +3,7 @@
 //  H3_Test
 //
 //  Created by Zachary Chandler on 1/26/20.
-//  Copyright © 2020 Routematch Software, Inc. All rights reserved.
+//  Copyright © 2020 Zachary Chandler All rights reserved.
 //
 
 import Foundation
@@ -16,19 +16,14 @@ final class Style {
     var preference: Preference = .dark
     
     fileprivate init () {
-        
-    }
+        }
     
-    func updateUIPreference() {
-        guard let vc = UIApplication.getTopViewController() else { return }
-                
-        if vc.traitCollection.userInterfaceStyle == .dark {
+    func updateUIPreference(_ style : UIUserInterfaceStyle) {
+        if style == .dark {
             preference =  .dark
         } else {
             preference = .light
         }
-        
-        //post ui updatee notification
     }
     
     enum Preference {

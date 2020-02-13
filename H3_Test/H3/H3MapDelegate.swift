@@ -3,7 +3,7 @@
 //  H3_Test
 //
 //  Created by Zachary Chandler on 2/7/20.
-//  Copyright © 2020 Routematch Software, Inc. All rights reserved.
+//  Copyright © 2020 Zachary Chandler All rights reserved.
 //
 
 import Foundation
@@ -24,27 +24,10 @@ protocol H3MapDelegate: AnyObject {
 
 extension H3MapDelegate {
     func removeAllLayers() {
-        hexLayers?.forEach { (layer) in
-            removeLayer(layerIdentifier: layer.identifier, removeSource: false)
-        }
-        
-        hexLayers?.forEach { (layer) in
-            removeLayer(layerIdentifier: layer.identifier, removeSource: true)
-        }
-        
-        if let id = hubsLayer?.identifier {
-            removeLayer(layerIdentifier: id, removeSource: false)
-            removeLayer(layerIdentifier: id, removeSource: true)
-        }
-        
-        clusterLayer?.forEach { (layer) in
-            removeLayer(layerIdentifier: layer.identifier, removeSource: false)
-        }
+        if let id = hubsLayer?.identifier { removeLayer(layerIdentifier: id, removeSource: true) }
 
-        clusterLayer?.forEach { (layer) in
-            removeLayer(layerIdentifier: layer.identifier, removeSource: true)
-        }
-    
+        hexLayers?.forEach { removeLayer(layerIdentifier: $0.identifier, removeSource: true) }
+        clusterLayer?.forEach { removeLayer(layerIdentifier: $0.identifier, removeSource: true) }
         hexLayers?.removeAll()
         clusterLayer?.removeAll()
         hubsLayer = nil
@@ -80,9 +63,6 @@ extension H3MapDelegate {
             // then remove the source
             if removeSource {
                 if let source = mapStyle.source(withIdentifier: layerIdentifier) {
-                    if source.identifier == "hex_linear" {
-                        print(source.identifier)
-                    }
                     print("Removing source with ID: \(source.identifier)")
                     mapStyle.removeSource(source)
                 }
@@ -103,7 +83,7 @@ extension H3MapDelegate {
 
         collection.features.forEach { (feature) in
             if let point = feature.value as? PointFeature {
-                let index = H3.API.convert(toH3: CLLocation(latitude: point.geometry.coordinates.latitude, longitude: point.geometry.coordinates.longitude), res: resolution)
+                let index = H3.geojson2h3.convert(toH3: CLLocation(latitude: point.geometry.coordinates.latitude, longitude: point.geometry.coordinates.longitude), res: resolution)
                 let option = layer[index] == nil
                 let value: Double = option ? 0 : layer[index]!
                 layer[index] = value + 1
@@ -112,13 +92,42 @@ extension H3MapDelegate {
         
         return normalizeData(layer)
     }
+    
+    func bufferPoints(_ collection: FeatureCollection, radius: Int32, normalize: MinMax? = nil) -> [H3Index : Double] {
+         var layer: [H3Index : Double] = [:]
+             
+         collection.features.forEach { (feature) in
+             if let point = feature.value as? PointFeature {
+                 let baseIndex = H3.geojson2h3.convert(toH3: CLLocation(latitude: point.geometry.coordinates.latitude, longitude: point.geometry.coordinates.longitude), res: resolution)
+                 let rings = baseIndex.kRingDistances(k: radius)
+                  
+                 //make sure you count the base index
+                 let option = layer[baseIndex] == nil
+                 let value: Double = option ? 0 : layer[baseIndex]!
+                 layer[baseIndex] = value + 1
+                 
+                 rings.forEach { (ring) in
+                     ring.forEach { (index) in
+                         let option = layer[index] == nil
+                         let value: Double = option ? 0 : layer[index]!
+                         let cal = value + 1
+                         layer[index] = cal
+                     }
+                 }
+             } else {
+                 print("not point feature")
+             }
+         }
+    
+         return normalizeData(layer)
+     }
         
     func bufferPointsLinear(_ collection: FeatureCollection, radius: Int32, normalize: MinMax? = nil) -> [H3Index : Double] {
         var layer: [H3Index : Double] = [:]
             
         collection.features.forEach { (feature) in
             if let point = feature.value as? PointFeature {
-                let baseIndex = H3.API.convert(toH3: CLLocation(latitude: point.geometry.coordinates.latitude, longitude: point.geometry.coordinates.longitude), res: resolution)
+                let baseIndex = H3.geojson2h3.convert(toH3: CLLocation(latitude: point.geometry.coordinates.latitude, longitude: point.geometry.coordinates.longitude), res: resolution)
                 let rings = baseIndex.kRingDistances(k: radius)
                 let step: Double = 1 / Double(radius + 1)
                 //distance is the index of first array but also the number away from the center hexagon
@@ -152,8 +161,8 @@ extension H3MapDelegate {
         var min = normalize?.1 ?? 1000000.0
         var layers = layer
         
-        //first pass find min and max
-        if normalize != nil {
+        if normalize == nil {
+            //first pass find min and max
             layer.forEach { (arg) in
                 let value = arg.1
                 if value > max { max = value }
@@ -168,8 +177,8 @@ extension H3MapDelegate {
             layers[key] = result
         }
         
-//      third pass print - not needed just helps
-        layers.values.forEach { (d) in print(d) }
+//      third pass print - not needed just helps debuging
+//        layers.values.forEach { (d) in print(d) }
         
         return layers
     }

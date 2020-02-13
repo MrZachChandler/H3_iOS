@@ -3,7 +3,7 @@
 //  H3_Test
 //
 //  Created by Zachary Chandler on 1/26/20.
-//  Copyright © 2020 Routematch Software, Inc. All rights reserved.
+//  Copyright © 2020 Zachary Chandler All rights reserved.
 //
 
 import Eureka
@@ -22,7 +22,7 @@ class CoreFunctionsViewController: ExampleViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupTapGestures()
+//        setupTapGestures()
         let c = CLLocationCoordinate2D(latitude: 33.789, longitude: -84.384)
         let marker = MGLPointAnnotation()
         marker.coordinate = c
@@ -40,7 +40,7 @@ class CoreFunctionsViewController: ExampleViewController {
             <<< StepperRow("Res") {
                 $0.title = "Res"
                 $0.value = Double(resolution)
-                $0.cellUpdate { (cell, row) in
+                $0.cellUpdate { [unowned self] (cell, row) in
                     guard let v = row.value else { return }
                     self.resolution = Int32(v)
                 }
@@ -49,18 +49,18 @@ class CoreFunctionsViewController: ExampleViewController {
             <<< SwitchRow("geotoH3") {
                 $0.title = "geotoH3"
                 $0.value = false
-                $0.onChange { (row) in
+                $0.onChange { [unowned self]  (row) in
                     guard let v = row.value else { return }
                     self.convertAndShowHex(v)
                 }
             }
-            <<< SwitchRow("chilrenCell") {
+            <<< SwitchRow("chilrenCell")  {
                 $0.title = "Show Children"
                 $0.value = false
                 $0.hidden = Condition.function(["geotoH3"], { form in
                     return !((form.rowBy(tag: "geotoH3") as? SwitchRow)?.value ?? false)
                 })
-                $0.onChange { (row) in
+                $0.onChange { [unowned self]  (row) in
                     guard let v = row.value else { return }
                     self.showChildren(v)
                 }
@@ -69,7 +69,7 @@ class CoreFunctionsViewController: ExampleViewController {
             <<< SwitchRow("h3ToGeo") {
                 $0.title = "h3ToGeo"
                 $0.value = false
-                $0.onChange { (row) in
+                $0.onChange {[unowned self]  (row) in
                     guard let v = row.value else { return }
                     self.refreshLossyMarker(v)
                 }
@@ -80,7 +80,7 @@ class CoreFunctionsViewController: ExampleViewController {
             <<< SwitchRow("Show Hexagons") {
                 $0.title = "Fill"
                 $0.value = false
-                $0.onChange { (row) in
+                $0.onChange { [unowned self]  (row) in
                     guard let show = row.value else { return }
                     if show {
                         self.polyfillMap()
@@ -94,7 +94,7 @@ class CoreFunctionsViewController: ExampleViewController {
             <<< SwitchRow("MultiPolygon") {
                 $0.title = "Multipolygon"
                 $0.value = false
-                $0.onChange { (row) in
+                $0.onChange {[unowned self]  (row) in
                     guard let show = row.value else { return }
                     if show {
                         self.multiPolyfillMap()
@@ -109,7 +109,7 @@ class CoreFunctionsViewController: ExampleViewController {
             <<< StepperRow("Rings") {
                 $0.title = "#"
                 $0.value = 1
-                $0.cellUpdate { (cell, row) in
+                $0.cellUpdate {[unowned self]  (cell, row) in
                     guard let v = row.value else { return }
                     self.numberOfRings = Int32(v)
                 }
@@ -118,7 +118,7 @@ class CoreFunctionsViewController: ExampleViewController {
             <<< SwitchRow("kRings") {
                 $0.title = "kRings"
                 $0.value = false
-                $0.onChange { (row) in
+                $0.onChange {[unowned self]  (row) in
                     guard let show = row.value else { return }
                     self.kRings(show: show)
                 }
@@ -127,7 +127,7 @@ class CoreFunctionsViewController: ExampleViewController {
             <<< SwitchRow("hexRings") {
                 $0.title = "hexRing "
                 $0.value = false
-                $0.onChange { (row) in
+                $0.onChange {[unowned self]  (row) in
                     guard let show = row.value else { return }
                     self.hexRings(show: show)
                 }
@@ -152,7 +152,7 @@ class CoreFunctionsViewController: ExampleViewController {
         // create dictionary
         var layer : [H3Index:Double] = [:]
         // create children
-        let res = (resolution == 0 || resolution == 15) ? resolution : resolution + 1
+        let res = resolution == 15 ? resolution : resolution + 1
         res == resolution ? resolutionError() : index.children(childRes: res).forEach { layer[$0] = 1 }
         //render hexagons
         let hex = hexLayers
@@ -160,7 +160,7 @@ class CoreFunctionsViewController: ExampleViewController {
         if let l = hex {hexLayers?.append(contentsOf: l)}
     }
     
-    func resolutionError() { showWarning(title: "Resolution Error", message: "") }
+    func resolutionError() { showWarning(title: "Resolution Error", message: "Choose another resolution") }
     
     func kRings(show: Bool) {
          if show {
@@ -226,8 +226,8 @@ class CoreFunctionsViewController: ExampleViewController {
             mapView.removeAnnotation(lossMarker)
         } else {
             guard let c = points.first else { return }
-            let loss = H3.API.convert(toH3: CLLocation(latitude: c.latitude, longitude: c.longitude), res: resolution)
-            let center = H3.API.convert(from: loss)
+            let loss = H3.geojson2h3.convert(toH3: CLLocation(latitude: c.latitude, longitude: c.longitude), res: resolution)
+            let center = H3.geojson2h3.convert(from: loss)
             let marker = MGLPointAnnotation()
             marker.coordinate = center
             lossMarker = marker
@@ -236,8 +236,7 @@ class CoreFunctionsViewController: ExampleViewController {
     }
     
     override func renderPolygonFeature(_ poly: PolygonFeature, source: MGLShapeSource, style: MGLStyle, addLineLayer: Bool) {
-        let hex = poly.properties!["hex"]
-        let id = hex!.jsonValue as! String
+        guard let id = poly.identifier?.value else { return }
         let hexLayer = MGLFillStyleLayer(identifier: "fill\(id)", source: source)
         hexLayer.fillColor =  NSExpression(forConstantValue:#colorLiteral(red: 0.9979701638, green: 0.9997151494, blue: 0.8536984324, alpha: 1))
         hexLayer.fillOpacity = NSExpression(forConstantValue: 0.75)
@@ -289,15 +288,22 @@ class CoreFunctionsViewController: ExampleViewController {
             return
         }
         
+        guard poly.maxPolyfillSize(res: resolution) > 0 else {
+            resolutionError()
+            return
+        }
+        
         poly.polyfill(res: resolution).forEach { hexs[$0] = Double(arc4random())}
         sources.append(sourceID)
         
-        DispatchQueue.main.async {
+        DispatchQueue.main.async { [unowned self] in
+            let hex = self.hexLayers
             self.renderHexer(layer: hexs, style: style, sourceId: sourceID, addLineLayer: true)
+            if let l = hex {self.hexLayers?.append(contentsOf: l)}
             self.mapView.setVisibleCoordinateBounds(coordinateBounds, animated: true)
             
             //show polygon on top of hexagons
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: { [unowned self] in
                 self.renderSinglePolygon(coordinateBounds)
             })
         }
@@ -341,12 +347,14 @@ class CoreFunctionsViewController: ExampleViewController {
         sources.append(oSourceID)
         
          
-         DispatchQueue.main.async {
+         DispatchQueue.main.async { [unowned self] in
+             let hex = self.hexLayers
              self.renderHexer(layer: hexs, style: style, sourceId: sourceID, addLineLayer: true)
+             if let l = hex {self.hexLayers?.append(contentsOf: l)}
              self.mapView.setVisibleCoordinateBounds(outerBounds, animated: true)
              
              //show polygon on top of hexagons
-             DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: {
+             DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: { [unowned self] in
                 self.renderSinglePolygon(coordinateBounds)
                 self.renderSinglePolygon(outerBounds)
              })
@@ -462,8 +470,6 @@ extension CoreFunctionsViewController : UIGestureRecognizerDelegate  {
         sources.append(sourceID)
         if let l = hex { hexLayers?.append(contentsOf: l) }
     }
-    
-    
 }
 
 

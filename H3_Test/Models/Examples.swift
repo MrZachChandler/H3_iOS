@@ -3,7 +3,7 @@
 //  H3_Test
 //
 //  Created by Zachary Chandler on 1/26/20.
-//  Copyright © 2020 Routematch Software, Inc. All rights reserved.
+//  Copyright © 2020 Zachary Chandler All rights reserved.
 //
 
 import Foundation
@@ -18,19 +18,15 @@ struct Example {
 
 extension Example {
     static var examples: Examples {
-        let allIndexes = Example(title: "All Indexes", type: .allIndexes)
-        let cluster = Example(title: "Clustering", type: .cluster)
-        let core = Example(title: "Core Functions", type: .core)
         let point = Example(title: "Point Layer", type: .pointLayer)
+        let core = Example(title: "Core Functions", type: .core)
         let polygon = Example(title: "Polygon Layer", type: .polygonLayer)
         let analysis = Example(title: "Analysis", type: .analysis)
         
-        return [core, allIndexes, cluster, point, polygon, analysis]
+        return [core, point, polygon, analysis]
     }
     
     enum ExampleType {
-        case cluster
-        case allIndexes
         case pointLayer
         case polygonLayer
         case analysis
@@ -41,25 +37,19 @@ extension Example {
         var vc: ExampleViewController!
         
         switch type {
-        case .allIndexes:
-            vc = PolygonViewController()
-        case .cluster:
-            vc = ClusterViewController()
         case .pointLayer:
             vc = PointLayerViewController()
         case .polygonLayer:
-            vc = CoreFunctionsViewController()
+            vc = PolygonViewController()
         case .analysis:
-            vc = CoreFunctionsViewController()
+            vc = ExampleViewController()
         case .core:
             vc = CoreFunctionsViewController()
         }
         
         vc.example = self
-        
+
         return vc
     }
-    
-//    var geoJson: 
 }
 
