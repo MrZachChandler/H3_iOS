@@ -14,54 +14,12 @@ import Turf
 import Eureka
 
 class PointLayerViewController: ExampleViewController {
-    override var resolution: Int32 {
-        didSet {
-            resDidChange = true
-            removeAll()
-        }
-    }
-    var resDidChange = false
     typealias PointsLayer = (Bool, Bool, Bool)
-    var countPointsLayer: [MGLStyleLayer] = []
-    var bufferPointsLayer: [MGLStyleLayer] = []
-    var bufferLinearLayer: [MGLStyleLayer] = []
-    var sources = ["count", "buffer", "linear", "hex_linear"]
-    
-    func removeAll() {
-        var layers: [MGLStyleLayer] = []
-        layers.append(contentsOf: countPointsLayer)
-        layers.append(contentsOf: bufferPointsLayer)
-        layers.append(contentsOf: bufferLinearLayer)
-
-        if let hex = hexLayers {
-            layers.append(contentsOf: hex)
-        }
-        
-        layers.forEach { (layer) in
-            mapView.style?.removeLayer(layer)
-        }
-        
-        for id in sources {
-            if let source = mapView.style?.source(withIdentifier: id) {
-                mapView.style?.removeSource(source)
-                print("removed source with ID: \(id)")
-            }
-        }
-        
-        bufferLinearLayer.removeAll()
-        countPointsLayer.removeAll()
-        bufferPointsLayer.removeAll()
-    }
-    
-    func hideHexagons() {
-        hexLayers?.forEach({ (layer) in
-            layer.isVisible = false
-        })
-    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         setupTapGestures()
+        resolution = 7
         
         form +++ Section("Raw Point Data")
             
@@ -77,11 +35,10 @@ class PointLayerViewController: ExampleViewController {
             <<< SwitchRow("hubs") {
                 $0.title = "Show Hubs"
                 $0.value = false
-                $0.onChange {[unowned self]  (row) in
+                $0.onChange { [unowned self] row in
                     guard let cluster = row.value else { return }
                     self.clusterLayer?.forEach({ (layer) in layer.isVisible = false })
                     self.hubsLayer?.isVisible = cluster
-                    self.hideHexagons()
                 }
             }
                 
@@ -90,10 +47,9 @@ class PointLayerViewController: ExampleViewController {
             <<< SwitchRow("cluster") {
                 $0.title = "Cluster Hubs"
                 $0.value = false
-                $0.onChange {[unowned self]  (row) in
+                $0.onChange {[unowned self] row in
                     guard let cluster = row.value else { return }
                     self.clusterLayer?.forEach({ (layer) in layer.isVisible = cluster })
-                    self.hideHexagons()
                 }
             }
                 
@@ -104,7 +60,7 @@ class PointLayerViewController: ExampleViewController {
                 $0.value = false
                 $0.onChange { [unowned self] (row) in
                     guard let show = row.value else { return }
-                    self.addLayer(for: (show,false,false))
+                    self.addHexagons(for: (show,false,false))
                 }
             }
         
@@ -113,68 +69,39 @@ class PointLayerViewController: ExampleViewController {
                 $0.value = false
                 $0.onChange {[unowned self]  (row) in
                     guard let show = row.value else { return }
-                    self.addLayer(for: (false,show,false))
+                    self.addHexagons(for: (false,show,false))
                 }
             }
                 
             <<< SwitchRow("bufferLinear") {
                 $0.title = "bufferLinear"
                 $0.value = false
-                $0.onChange {[unowned self]  (row) in
+                $0.onChange { [unowned self] row in
                     guard let show = row.value else { return }
-                    self.addLayer(for: (false,false,show))
+                    self.addHexagons(for: (false,false,show))
                 }
             }
             
             tableView.reloadData()
     }
     
-    func renderPolygonFeature(for point: PointsLayer, poly: PolygonFeature, source: MGLShapeSource, style: MGLStyle, addLineLayer: Bool) {
-            let hex = poly.properties!["hex"]
-            let id = hex!.jsonValue as! String
-            let range: [Double: UIColor] = [ 0: #colorLiteral(red: 0.9979701638, green: 0.9997151494, blue: 0.8536984324, alpha: 1), 0.5: #colorLiteral(red: 0.3144622147, green: 0.728943646, blue: 0.7659309506, alpha: 1), 1: #colorLiteral(red: 0.1020374969, green: 0.2753289044, blue: 0.5405613184, alpha: 1) ]
-            let hexLayer = MGLFillStyleLayer(identifier: "fill\(id)\(source.identifier)", source: source)
-            hexLayer.fillColor = NSExpression(format: "mgl_step:from:stops:(value, %@, %@)", UIColor(red: 13/255, green: 35/255, blue: 69/255, alpha: 1), range)
-            hexLayer.fillOpacity = NSExpression(forConstantValue: 0.75)
-            style.addLayer(hexLayer)
-            hexLayers!.append(hexLayer)
-            
-            if point.0 { countPointsLayer.append(hexLayer) }
-            if point.1 { bufferPointsLayer.append(hexLayer) }
-            if point.2 { bufferLinearLayer.append(hexLayer) }
-                            
-    ////                 Create new layer for the line.
-            if addLineLayer {
-                let lineLayer = MGLLineStyleLayer(identifier: "polyline\(id)\(source.identifier)", source: source)
-
-                // Set the line join and cap to a rounded end.
-                lineLayer.lineJoin = NSExpression(forConstantValue: "round")
-                lineLayer.lineCap = NSExpression(forConstantValue: "round")
-
-                // Set the line color to a constant color contrast for style.
-                lineLayer.lineColor = NSExpression(forConstantValue: Style.shared.preference.textColor)
-
-                // Use `NSExpression` to smoothly adjust the line width from 2pt to 20pt between zoom levels 14 and 18. The `interpolationBase` parameter allows the values to interpolate along an exponential curve.
-                lineLayer.lineWidth = NSExpression(format: "mgl_interpolate:withCurveType:parameters:stops:($zoomLevel, 'linear', nil, %@)",
-                [6: 2, 18: 0])
-
-                style.addLayer(lineLayer)
-                hexLayers!.append(lineLayer)
-                
-                if point.0 { countPointsLayer.append(lineLayer) }
-                if point.1 { bufferPointsLayer.append(lineLayer) }
-                if point.2 { bufferLinearLayer.append(lineLayer) }
-            }
-            
-            hexLayers?.forEach({ (l) in l.isVisible = true })
-        }
-    
-    func renderHexagons(for points: PointsLayer, layer :  [H3Index : Double], style: MGLStyle, sourceId: String = "hex_linear", addLineLayer: Bool = false) {
+    func renderPolygonFeature(source: MGLShapeSource, style: MGLStyle) {
+        let range: [Double: UIColor] = Style.shared.preference.shortRange
+        let hexLayer = MGLFillStyleLayer(identifier: source.identifier, source: source)
+        hexLayer.fillColor = NSExpression(format: "mgl_step:from:stops:(value, %@, %@)", UIColor(red: 13/255, green: 35/255, blue: 69/255, alpha: 1), range)
+        hexLayer.fillOutlineColor = NSExpression(forConstantValue: Style.shared.preference.textColor)
+        hexLayer.fillOpacity = NSExpression(forConstantValue: 0.75)
+        style.addLayer(hexLayer)
+        
+        //cleanup
         if hexLayers == nil { hexLayers = [] }
+        hexLayers?.append(hexLayer)
+    }
+    
+    func renderHexagons(for points: PointsLayer, layer :  [H3Index : Double], style: MGLStyle, sourceId: String = "hex_linear") {
         var features : [FeatureVariant] = []
         
-        layer.forEach { (arg) in
-            let (key , value) = arg
+        layer.forEach { (key , value) in
             let valueJSON = AnyJSONType(value)
             let hex = AnyJSONType(key.toString())
             features.append(H3.geojson2h3.h3ToFeature(key.toString(), ["value": valueJSON, "hex": hex]))
@@ -183,21 +110,16 @@ class PointLayerViewController: ExampleViewController {
         let collections = FeatureCollection(features)
         let data = try! JSONEncoder().encode(collections)
         let shape = try? MGLShape(data: data, encoding: String.Encoding.utf8.rawValue)
-        let source = MGLShapeSource(identifier: sourceId, shape: shape, options: nil)
-        style.addSource(source)
         
-        print(String(data: data, encoding: .utf8) ?? "")
+        guard let source = style.source(withIdentifier: sourceId) as? MGLShapeSource else {
+            let source = MGLShapeSource(identifier: sourceId, shape: shape, options: nil)
+            style.addSource(source)
+            renderPolygonFeature(source: source, style: style)
+            return
+        }
         
-        features.forEach { (feature) in
-            switch feature {
-            case .polygonFeature(let poly):
-                DispatchQueue.main.async {
-                    self.renderPolygonFeature(for: points, poly: poly, source: source, style: style, addLineLayer: addLineLayer)
-                    self.stopLoading()
-                }
-            default:
-                print("unknown feature")
-            }
+        DispatchQueue.main.async {
+            source.shape = shape
         }
     }
     
@@ -302,70 +224,37 @@ extension PointLayerViewController {
         addClusterData(mapView, didFinishLoading: style)
     }
     
-    func addLayer(for points: PointsLayer) {
-        hideHexagons()
-        guard points.1 || points.0 || points.2 else { return }
+    func addHexagons(for points: PointsLayer) {
+        addLayer(for: points) { [weak self] in
+            self?.stopLoading()
+        }
+    }
+    
+    func addLayer(for points: PointsLayer, _ block: @escaping () -> Void) {
         guard let style = mapView.style else { return }
-        
-        if points.0 && countPointsLayer.count > 0 {
-            if resDidChange {
-                countPointsLayer.forEach { (layer) in
-                    mapView.style?.removeLayer(layer)
-                }
-                countPointsLayer.removeAll()
-                //remove source
-            }
-            else {
-                countPointsLayer.forEach{$0.isVisible = true}
-                return
-            }
-        }
-        if points.1 && bufferPointsLayer.count > 0 {
-            if resDidChange {
-                bufferPointsLayer.forEach { (layer) in
-                    mapView.style?.removeLayer(layer)
-                }
-                bufferPointsLayer.removeAll()
-                //remove source
-            }
-            else {
-                bufferPointsLayer.forEach{$0.isVisible = true}
-                return
-            }
-        }
-        if points.2 && bufferLinearLayer.count > 0 {
-            if resDidChange {
-                bufferLinearLayer.forEach { (layer) in
-                    mapView.style?.removeLayer(layer)
-                }
-                bufferLinearLayer.removeAll()
-                //remove source
-            }
-            else {
-                bufferLinearLayer.forEach{$0.isVisible = true}
-                return
-            }
+        guard points.1 || points.0 || points.2 else {
+            hexLayers?.forEach{ $0.isVisible = false }
+            return
         }
         
         startLoading()
         
          DispatchQueue.global(qos: .background).async(execute: {
+         defer { DispatchQueue.main.async { block() } }
+
             let url = URL(fileURLWithPath: Bundle.main.path(forResource: "MARTA_Stops", ofType: "geojson")!)
 
             if let jsonData = try? Data(contentsOf: url, options: .mappedIfSafe)
             {
-                let decoder = JSONDecoder()
-                if let feature = try? decoder.decode(FeatureCollection.self, from: jsonData) {
-                    DispatchQueue.main.async {
-                        if points.0 {
-                            self.renderHexagons(for: points, layer: self.countPoints(feature), style: style, sourceId: "count", addLineLayer: true)
-                        }
-                        if points.1 {
-                            self.renderHexagons(for: points, layer: self.bufferPoints(feature, radius: 2), style: style, sourceId: "buffer", addLineLayer: true)
-                        }
-                        if points.2 {
-                            self.renderHexagons(for: points, layer: self.bufferPointsLinear(feature, radius: 2), style: style, sourceId: "linear", addLineLayer: true)
-                        }
+                if let feature = try? JSONDecoder().decode(FeatureCollection.self, from: jsonData) {
+                    if points.0 {
+                        self.renderHexagons(for: points, layer: self.countPoints(feature), style: style, sourceId: "hex" )
+                    }
+                    if points.1 {
+                        self.renderHexagons(for: points, layer: self.bufferPoints(feature, radius: 2), style: style, sourceId: "hex")
+                    }
+                    if points.2 {
+                        self.renderHexagons(for: points, layer: self.bufferPointsLinear(feature, radius: 2), style: style, sourceId: "hex")
                     }
                  }
              }
@@ -529,11 +418,5 @@ extension PointLayerViewController {
             animation()
             completion(true)
         }
-    }
-}
-
-extension Double {
-    func normalize(min: Double, max: Double, from a: Double = 0, to b: Double = 1) -> Double {
-        return (b - a) * ((self - min) / (max - min)) + a
     }
 }
