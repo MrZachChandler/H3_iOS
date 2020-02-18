@@ -30,6 +30,8 @@
 		604A7FDE23EDE0C10049B2D1 /* H3MapDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 604A7FDD23EDE0C10049B2D1 /* H3MapDelegate.swift */; };
 		604A7FE023EDEBBC0049B2D1 /* PointLayerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 604A7FDF23EDEBBC0049B2D1 /* PointLayerViewController.swift */; };
 		6058CA6F23EEA53B0083A6B5 /* PolygonViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6058CA6E23EEA53B0083A6B5 /* PolygonViewController.swift */; };
+		6079A02223FAE7B2007844A9 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6079A02123FAE7B2007844A9 /* Extensions.swift */; };
+		607AFD2423F6E6B700731045 /* atlanta_censustracts.json in Resources */ = {isa = PBXBuildFile; fileRef = 607AFD2323F6E6B700731045 /* atlanta_censustracts.json */; };
 		60911BFA237702BD0077F33B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60911BF9237702BD0077F33B /* AppDelegate.swift */; };
 		60911BFC237702BD0077F33B /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60911BFB237702BD0077F33B /* SceneDelegate.swift */; };
 		60911C01237702BD0077F33B /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 60911BFF237702BD0077F33B /* Main.storyboard */; };
@@ -78,6 +80,8 @@
 		604A7FDD23EDE0C10049B2D1 /* H3MapDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = H3MapDelegate.swift; sourceTree = "<group>"; };
 		604A7FDF23EDEBBC0049B2D1 /* PointLayerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PointLayerViewController.swift; sourceTree = "<group>"; };
 		6058CA6E23EEA53B0083A6B5 /* PolygonViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolygonViewController.swift; sourceTree = "<group>"; };
+		6079A02123FAE7B2007844A9 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
+		607AFD2323F6E6B700731045 /* atlanta_censustracts.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = atlanta_censustracts.json; sourceTree = "<group>"; };
 		60911BF6237702BD0077F33B /* H3 iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "H3 iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		60911BF9237702BD0077F33B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		60911BFB237702BD0077F33B /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -140,6 +144,7 @@
 			children = (
 				60911C0D237705520077F33B /* LocationManager.swift */,
 				60331BE223DE21F2002714BB /* Style.swift */,
+				6079A02123FAE7B2007844A9 /* Extensions.swift */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -193,6 +198,7 @@
 		60911C17237715D20077F33B /* files */ = {
 			isa = PBXGroup;
 			children = (
+				607AFD2323F6E6B700731045 /* atlanta_censustracts.json */,
 				60911C0F237710220077F33B /* MARTA_Stops.geojson */,
 			);
 			path = files;
@@ -280,6 +286,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				60911C06237702BF0077F33B /* LaunchScreen.storyboard in Resources */,
+				607AFD2423F6E6B700731045 /* atlanta_censustracts.json in Resources */,
 				60911C03237702BF0077F33B /* Assets.xcassets in Resources */,
 				60911C01237702BD0077F33B /* Main.storyboard in Resources */,
 				60911C10237710220077F33B /* MARTA_Stops.geojson in Resources */,
@@ -329,6 +336,7 @@
 				6058CA6F23EEA53B0083A6B5 /* PolygonViewController.swift in Sources */,
 				60331BE523DE2C15002714BB /* ExampleViewController.swift in Sources */,
 				60C5165723DF84E0003EF59E /* CoreFunctionsViewController.swift in Sources */,
+				6079A02223FAE7B2007844A9 /* Extensions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

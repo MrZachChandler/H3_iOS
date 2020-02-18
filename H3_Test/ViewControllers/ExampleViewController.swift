@@ -32,13 +32,15 @@ class ExampleViewController: FormViewController, H3MapDelegate {
             }
         }
     }
-
+    
+    override var shouldAutorotate: Bool { return true }
+    override var supportedInterfaceOrientations: UIInterfaceOrientationMask { return .landscape }
     override func viewDidLoad() {
         super.viewDidLoad()
-        icon = UIImage(named: "port")
-        Style.shared.updateUIPreference(traitCollection.userInterfaceStyle)
         addMapView()
+        icon = UIImage(named: "port")
         LocationManager.sharedManager.registerDelegate(self)
+        Style.shared.updateUIPreference(traitCollection.userInterfaceStyle)
     }
     
     override func viewDidDisappear(_ animated: Bool) {
@@ -81,28 +83,24 @@ class ExampleViewController: FormViewController, H3MapDelegate {
 
     func startLoading() {
         if activity == nil {
-            activity = UIActivityIndicatorView(frame: CGRect(x: 0, y: 0, width: 30, height: 30))
-            actView = UIView(frame: CGRect(x: 0, y: 0, width: 80, height: 80))
-            actView?.backgroundColor = .white
-            actView?.alpha = 0
-            actView?.addSubview(activity!)
-            activity?.startAnimating()
+            let activity = UIActivityIndicatorView(frame: CGRect(x: 0, y: 0, width: 30, height: 30))
+            let small = UIView(frame: CGRect(x: 0, y: 0, width: 80, height: 80))
+            small.backgroundColor = Style.shared.preference.backgroundColor
+            small.alpha = 0
+            small.addSubview(activity)
             
-            activity?.snp.makeConstraints({ (make) in
-                make.center.equalTo((actView?.snp.center)!)
-            })
-
-            view.addSubview(actView!)
+            activity.startAnimating()
+            activity.snp.makeConstraints { $0.center.equalTo((small.snp.center)) }
             
-            actView?.snp.makeConstraints({ (make) in
-                make.center.equalToSuperview()
-            })
+            view.addSubview(small)
+            small.snp.makeConstraints { $0.center.equalToSuperview() }
         
-            view.bringSubviewToFront(actView!)
+            view.bringSubviewToFront(small)
             
-            UIView.animate(withDuration: 2) {
-                self.actView?.alpha = 1
-            }
+            UIView.animate(withDuration: 2) { small.alpha = 1 }
+            
+            self.activity = activity
+            self.actView = small
         }
     }
     
@@ -126,7 +124,12 @@ class ExampleViewController: FormViewController, H3MapDelegate {
         
         layer.forEach { (arg) in
             let (key , value) = arg
-            let valueJSON = AnyJSONType(value)
+            var valueJSON = AnyJSONType(value.jsonValue)
+
+            if value.isNaN {
+                valueJSON = AnyJSONType(0)
+            }
+            
             features.append(H3.geojson2h3.h3ToFeature(key.toString(), ["value": valueJSON]))
         }
         
@@ -135,7 +138,6 @@ class ExampleViewController: FormViewController, H3MapDelegate {
         let shape = try? MGLShape(data: data, encoding: String.Encoding.utf8.rawValue)
         let source = MGLShapeSource(identifier: sourceId, shape: shape, options: nil)
         style.addSource(source)
-        
         print(String(data: data, encoding: .utf8) ?? "")
         
         features.forEach { (feature) in
@@ -167,7 +169,7 @@ class ExampleViewController: FormViewController, H3MapDelegate {
                         
         let hexLayer = MGLFillStyleLayer(identifier: "fill\(id)", source: source)
         hexLayer.fillColor = NSExpression(format: "mgl_step:from:stops:(value, %@, %@)", UIColor(red: 13/255, green: 35/255, blue: 69/255, alpha: 1), range)
-//        hexLayer.fillOpacity = NSExpression(format: "mgl_interpolate:withCurveType:parameters:stops:($zoomLevel, 'linear', nil, %@)", [13: 20, 17: 0])
+        hexLayer.fillOpacity = NSExpression(forConstantValue: 0.75)
         hexLayer.fillOutlineColor = NSExpression(format: "mgl_step:from:stops:(value, %@, %@)", UIColor(red: 253/255, green: 253/255, blue: 217/255, alpha: 0.75), lineRange)
         style.addLayer(hexLayer)
         hexLayers!.append(hexLayer)

@@ -25,12 +25,10 @@ class ExampleTableViewCell: UITableViewCell {
         label.textColor = Style.shared.preference.textColor
         label.backgroundColor = Style.shared.preference.backgroundColor
         label.textAlignment = .left
-
+        
         contentView.addSubview(label)
         
-        label.snp.makeConstraints { make in
-            make.edges.equalToSuperview().inset(8)
-        }
+        label.snp.makeConstraints { $0.edges.equalToSuperview().inset(16) }
         
         return label
     }()
@@ -42,20 +40,5 @@ class ExampleTableViewCell: UITableViewCell {
         label.textColor = Style.shared.preference.textColor
         label.backgroundColor = Style.shared.preference.backgroundColor
         contentView.backgroundColor = Style.shared.preference.backgroundColor
-    }
-}
-
-extension UIFont {
-    func withTraits(traits:UIFontDescriptor.SymbolicTraits) -> UIFont {
-        let descriptor = fontDescriptor.withSymbolicTraits(traits)
-        return UIFont(descriptor: descriptor!, size: 0) //size 0 means keep the size as it is
-    }
-
-    func bold() -> UIFont {
-        return withTraits(traits: .traitBold)
-    }
-
-    func italic() -> UIFont {
-        return withTraits(traits: .traitItalic)
     }
 }
