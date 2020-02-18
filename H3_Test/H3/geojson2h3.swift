@@ -47,22 +47,39 @@ enum H3 {
             
             switch feature {
             case .polygonFeature(let polygon):
-                print("polygonFeature")
                 return flatten(polygonToH3Index(polygon, resolution: resolution))
             case .multiPolygonFeature(let multiPolygonFeature):
                 return flatten(multiPolygonToH3Index(multiPolygonFeature, resolution: resolution))
-            default:
-                return nil
+            case .pointFeature(let point):
+                var geo = point.geometry.coordinates.geoCoord
+                return [geo.toH3(res: resolution).toString()]
+            case .lineStringFeature(let line):
+                return convert(line.geometry.coordinates, at: resolution)
+            case .multiPointFeature(let multiPoint):
+                return convert(multiPoint.geometry.coordinates, at: resolution)
+            case .multiLineStringFeature(let multiLine):
+                return convert(multiLine.geometry.coordinates, at: resolution)
             }
         }
         
+        static func convert(_ coordinates: [CLLocationCoordinate2D], at res: Int32) -> [String] {
+            var strings: [String] = []
+            coordinates.forEach {
+                var geo = $0.geoCoord
+                strings.append(geo.toH3(res: res).toString())
+            }
+            return Array(Set(strings))
+        }
+        
+        static func convert(_ coordinates: [[CLLocationCoordinate2D]], at res: Int32) -> [String] {
+            var strings: [[String]] = []
+            coordinates.forEach { strings.append(convert($0, at: res))}
+            return Array(Set(flatten(strings)))
+        }
+        
         static func convert(toH3 location: CLLocation , res: Int32) -> H3Swift.H3Index {
-            var coordinate = GeoCoord()
-            coordinate.lat = deg2rad(location.coordinate.latitude)
-            coordinate.lon = deg2rad(location.coordinate.longitude)
-            
-            let k = coordinate.toH3(res: res)
-            return k
+            var coordinate = location.geoCoord
+            return coordinate.toH3(res: res)
         }
         
         static func convert(from index: H3Swift.H3Index) -> CLLocationCoordinate2D {
@@ -107,8 +124,7 @@ enum H3 {
         }
         
         static func h3ToFeature(_ addressString: String, _ properties: FeatureProperties = FeatureProperties.none) -> FeatureVariant {
-            let index = H3Swift.H3Index.init(string: addressString)
-            return h3ToFeature(index, properties)
+            return h3ToFeature(H3Swift.H3Index.init(string: addressString), properties)
         }
         
         static func h3ToFeature(_ index: H3Index, _ properties: FeatureProperties = FeatureProperties.none) -> FeatureVariant {
@@ -123,10 +139,8 @@ enum H3 {
             return FeatureVariant.polygonFeature(feature)
         }
 
-        static func h3ToGeoBoundary(from k: H3Swift.H3Index) -> [CLLocationCoordinate2D] {
-            var arr: [CLLocationCoordinate2D] = []
-            k.geoBoundary().forEach { arr.append($0.coordinate) }
-            return arr
+        static func h3ToGeoBoundary(from index: H3Swift.H3Index) -> [CLLocationCoordinate2D] {
+            return index.geoBoundary().coordinates
         }
         
         static func h3SetToFeature(_ hexagons: [H3Swift.H3Index], _ properties: FeatureProperties = FeatureProperties.none) -> FeatureVariant {
@@ -136,6 +150,7 @@ enum H3 {
         static func h3SetToMultiPolygon(_ hexagons: [H3Swift.H3Index], _ properties: FeatureProperties = FeatureProperties.none) -> MultiPolygonFeature {
             let coordinates = hexagons.map { return [h3ToGeoBoundary(from: $0)] }
             let shape = MultiPolygon(coordinates)
+            
             var multiPolygon = MultiPolygonFeature(shape)
             multiPolygon.properties = properties
             multiPolygon.type = .feature
@@ -150,11 +165,10 @@ enum H3 {
         static func h3SetToFeatureCollection(_ hexagons: [H3Swift.H3Index], _ properties: FeatureProperties) -> FeatureCollection {
             var features: [FeatureVariant] = []
             
-            hexagons.forEach { index in
-                let properties = getProperties(index)
-                let feature = h3ToFeature(index.toString(), properties)
+            hexagons.forEach {
+                let properties = getProperties($0)
+                let feature = h3ToFeature($0.toString(), properties)
                 features.append(feature)
-                
             }
             
             var featureCollection = FeatureCollection(features)
@@ -218,10 +232,10 @@ extension GeoCoords {
 
 extension CLLocationCoordinate2D {
     var geoCoord: GeoCoord {
-        var c = GeoCoord()
-        c.lat = H3.geojson2h3.deg2rad(latitude)
-        c.lon = H3.geojson2h3.deg2rad(longitude)
-        return c
+        var geoCoord = GeoCoord()
+        geoCoord.lat = H3.geojson2h3.deg2rad(latitude)
+        geoCoord.lon = H3.geojson2h3.deg2rad(longitude)
+        return geoCoord
     }
 }
 extension CLLocationCoordinates2D {
@@ -231,9 +245,40 @@ extension CLLocationCoordinates2D {
         return asGeoCoords
     }
 }
+typealias StringsStrings = [[String]]
+extension StringsStrings {
+    var h3Indexs: [[H3Index]] {
+        var h3Indexs: [[H3Index]] = [[]]
+        forEach{h3Indexs.append($0.h3Indexs)}
+        return h3Indexs
+    }
+}
 
+typealias Strings = [String]
+extension Strings {
+    var h3Indexs: [H3Index] {
+        var h3Indexs: [H3Index?] = []
+        forEach { h3Indexs.append($0.h3Index)}
+        return h3Indexs.filter { return $0 != nil } as! [H3Index]
+    }
+}
 extension String {
     var h3Index: H3Index? {
         return H3Swift.H3Index.init(string: self)
+    }
+}
+
+extension Double {
+    func normalize(min: Double, max: Double, from a: Double = 0, to b: Double = 1) -> Double {
+        return (b - a) * ((self - min) / (max - min)) + a
+    }
+}
+
+extension CLLocation {
+    var geoCoord: GeoCoord {
+        var geoCoord = GeoCoord()
+        geoCoord.lat = H3.geojson2h3.deg2rad(coordinate.latitude)
+        geoCoord.lon = H3.geojson2h3.deg2rad(coordinate.longitude)
+        return geoCoord
     }
 }

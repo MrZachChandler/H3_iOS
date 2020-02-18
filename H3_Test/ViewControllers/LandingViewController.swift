@@ -13,12 +13,13 @@ import SnapKit
 class LandingViewController: UITableViewController {
     let examples = Example.examples
     
+    override var supportedInterfaceOrientations: UIInterfaceOrientationMask { return .all }
+    override var shouldAutorotate: Bool { return true }
     override func viewDidLoad() {
         super.viewDidLoad()
-    
         title = "Examples"
+        navigationController?.navigationBar.prefersLargeTitles = true
         Style.shared.updateUIPreference(traitCollection.userInterfaceStyle)
-        navigationController?.navigationBar.titleTextAttributes
         tableView.register(ExampleTableViewCell.self, forCellReuseIdentifier: "Example")
     }
     
@@ -40,7 +41,15 @@ class LandingViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let device = UIDevice.current
+        if !device.orientation.isLandscape {
+            let value = UIInterfaceOrientation.landscapeRight.rawValue
+            device.setValue(value, forKey: "orientation")
+        }
         let vc = examples[indexPath.row].viewController
         navigationController?.pushViewController(vc, animated: true)
+    }
+    override func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
+        return UIView()
     }
 }

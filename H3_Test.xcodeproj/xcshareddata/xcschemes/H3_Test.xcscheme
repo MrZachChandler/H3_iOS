@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "60911BF5237702BD0077F33B"
-               BuildableName = "H3_Test.app"
+               BuildableName = "H3 iOS.app"
                BlueprintName = "H3_Test"
                ReferencedContainer = "container:H3_Test.xcodeproj">
             </BuildableReference>
@@ -45,7 +45,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "60911BF5237702BD0077F33B"
-            BuildableName = "H3_Test.app"
+            BuildableName = "H3 iOS.app"
             BlueprintName = "H3_Test"
             ReferencedContainer = "container:H3_Test.xcodeproj">
          </BuildableReference>
@@ -62,7 +62,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "60911BF5237702BD0077F33B"
-            BuildableName = "H3_Test.app"
+            BuildableName = "H3 iOS.app"
             BlueprintName = "H3_Test"
             ReferencedContainer = "container:H3_Test.xcodeproj">
          </BuildableReference>

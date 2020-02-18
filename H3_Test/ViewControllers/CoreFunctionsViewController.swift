@@ -22,7 +22,7 @@ class CoreFunctionsViewController: ExampleViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-//        setupTapGestures()
+
         let c = CLLocationCoordinate2D(latitude: 33.789, longitude: -84.384)
         let marker = MGLPointAnnotation()
         marker.coordinate = c
