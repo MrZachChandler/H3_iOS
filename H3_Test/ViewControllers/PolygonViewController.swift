@@ -14,7 +14,7 @@ import Turf
 import SnapKit
 
 class PolygonViewController: ExampleViewController {
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         resolution = 5
@@ -45,9 +45,7 @@ class PolygonViewController: ExampleViewController {
     
     func addData(_ style: MGLStyle) {
         startLoading()
-        addCensusTrackData(style) { [weak self] in
-            self?.stopLoading()
-        }
+        addCensusTrackData(style) { [weak self] in self?.stopLoading() }
     }
     
     func mapView(_ mapView: MGLMapView, didFinishLoading style: MGLStyle) {
@@ -78,8 +76,6 @@ class PolygonViewController: ExampleViewController {
     }
     
     func createHexLayer(featureCollection: FeatureCollection) -> Data? {
-        if hexLayers == nil { hexLayers = [] }
-        
         var layers: [H3Index: Double] = [:]
         var features : [FeatureVariant] = []
         var min = 10000000.0
@@ -112,17 +108,17 @@ class PolygonViewController: ExampleViewController {
     }
     
     func createSource(style: MGLStyle, shape: MGLShape, sourceID: String) {
-        let range: [Double: UIColor] = Style.shared.preference.medRange
         let source = MGLShapeSource(identifier: sourceID, shape: shape, options: nil)
-        style.addSource(source)
-        
         let hexLayer = MGLFillStyleLayer(identifier: sourceID, source: source)
-        hexLayer.fillColor = NSExpression(format: "mgl_step:from:stops:(value, %@, %@)", #colorLiteral(red: 0.004857238848, green: 0, blue: 0.1536510587, alpha: 1), range)
+        hexLayer.fillColor = NSExpression(format: "mgl_step:from:stops:(value, %@, %@)", #colorLiteral(red: 0.004857238848, green: 0, blue: 0.1536510587, alpha: 1), userInterfaceStyle.medRange)
         hexLayer.fillOpacity = NSExpression(forConstantValue: 0.75)
-        hexLayer.fillOutlineColor = NSExpression(forConstantValue: Style.shared.preference.textColor)
+        hexLayer.fillOutlineColor = NSExpression(forConstantValue: userInterfaceStyle.textColor)
         
-        style.addLayer(hexLayer)
-        hexLayers?.append(hexLayer)
-        hexLayers?.forEach({$0.isVisible = true})
+        DispatchQueue.main.async {
+            style.addLayer(hexLayer)
+            style.addSource(source)
+        }
+        
+        hexLayers.append(hexLayer)
     }
 }

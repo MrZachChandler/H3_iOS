@@ -37,7 +37,6 @@
 		60911C01237702BD0077F33B /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 60911BFF237702BD0077F33B /* Main.storyboard */; };
 		60911C03237702BF0077F33B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 60911C02237702BF0077F33B /* Assets.xcassets */; };
 		60911C06237702BF0077F33B /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 60911C04237702BF0077F33B /* LaunchScreen.storyboard */; };
-		60911C0E237705520077F33B /* LocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60911C0D237705520077F33B /* LocationManager.swift */; };
 		60911C10237710220077F33B /* MARTA_Stops.geojson in Resources */ = {isa = PBXBuildFile; fileRef = 60911C0F237710220077F33B /* MARTA_Stops.geojson */; };
 		60C5165723DF84E0003EF59E /* CoreFunctionsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60331C2523DE46F3002714BB /* CoreFunctionsViewController.swift */; };
 /* End PBXBuildFile section */
@@ -89,7 +88,6 @@
 		60911C02237702BF0077F33B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		60911C05237702BF0077F33B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		60911C07237702BF0077F33B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		60911C0D237705520077F33B /* LocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationManager.swift; sourceTree = "<group>"; };
 		60911C0F237710220077F33B /* MARTA_Stops.geojson */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = MARTA_Stops.geojson; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -142,7 +140,6 @@
 		60331BE123DE21E6002714BB /* Util */ = {
 			isa = PBXGroup;
 			children = (
-				60911C0D237705520077F33B /* LocationManager.swift */,
 				60331BE223DE21F2002714BB /* Style.swift */,
 				6079A02123FAE7B2007844A9 /* Extensions.swift */,
 			);
@@ -326,7 +323,6 @@
 				60331BDD23DE20DB002714BB /* Examples.swift in Sources */,
 				60331C0623DE3836002714BB /* geojson2h3.swift in Sources */,
 				604A7FE023EDEBBC0049B2D1 /* PointLayerViewController.swift in Sources */,
-				60911C0E237705520077F33B /* LocationManager.swift in Sources */,
 				60911BFA237702BD0077F33B /* AppDelegate.swift in Sources */,
 				60331BE023DE2120002714BB /* ExampleTableViewCell.swift in Sources */,
 				60911BFC237702BD0077F33B /* SceneDelegate.swift in Sources */,
