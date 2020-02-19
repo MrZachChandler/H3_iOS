@@ -16,11 +16,16 @@ import Eureka
 class PointLayerViewController: ExampleViewController {
     typealias PointsLayer = (Bool, Bool, Bool)
     
+    var icon = UIImage(named: "port")!
+    var popup: UIView?
+    var clusterLayer: [MGLStyleLayer]?
+    var hubsLayer: MGLStyleLayer?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupTapGestures()
         resolution = 7
-        
+
         form +++ Section("Raw Point Data")
             
             <<< StepperRow("Res") {
@@ -82,20 +87,18 @@ class PointLayerViewController: ExampleViewController {
                 }
             }
             
-            tableView.reloadData()
+        tableView.reloadData()
     }
     
     func renderPolygonFeature(source: MGLShapeSource, style: MGLStyle) {
-        let range: [Double: UIColor] = Style.shared.preference.shortRange
         let hexLayer = MGLFillStyleLayer(identifier: source.identifier, source: source)
-        hexLayer.fillColor = NSExpression(format: "mgl_step:from:stops:(value, %@, %@)", UIColor(red: 13/255, green: 35/255, blue: 69/255, alpha: 1), range)
-        hexLayer.fillOutlineColor = NSExpression(forConstantValue: Style.shared.preference.textColor)
+        hexLayer.fillColor = NSExpression(format: "mgl_step:from:stops:(value, %@, %@)", UIColor(red: 13/255, green: 35/255, blue: 69/255, alpha: 1), userInterfaceStyle.shortRange)
+        hexLayer.fillOutlineColor = NSExpression(forConstantValue: userInterfaceStyle.textColor)
         hexLayer.fillOpacity = NSExpression(forConstantValue: 0.75)
-        style.addLayer(hexLayer)
         
-        //cleanup
-        if hexLayers == nil { hexLayers = [] }
-        hexLayers?.append(hexLayer)
+        DispatchQueue.main.async { style.addLayer(hexLayer) }
+        
+        hexLayers.append(hexLayer)
     }
     
     func renderHexagons(for points: PointsLayer, layer :  [H3Index : Double], style: MGLStyle, sourceId: String = "hex_linear") {
@@ -232,18 +235,12 @@ extension PointLayerViewController {
     
     func addLayer(for points: PointsLayer, _ block: @escaping () -> Void) {
         guard let style = mapView.style else { return }
-        guard points.1 || points.0 || points.2 else {
-            hexLayers?.forEach{ $0.isVisible = false }
-            return
-        }
-        
-        startLoading()
-        
+        guard points.1 || points.0 || points.2 else { return }
+                
          DispatchQueue.global(qos: .background).async(execute: {
          defer { DispatchQueue.main.async { block() } }
 
             let url = URL(fileURLWithPath: Bundle.main.path(forResource: "MARTA_Stops", ofType: "geojson")!)
-
             if let jsonData = try? Data(contentsOf: url, options: .mappedIfSafe)
             {
                 if let feature = try? JSONDecoder().decode(FeatureCollection.self, from: jsonData) {

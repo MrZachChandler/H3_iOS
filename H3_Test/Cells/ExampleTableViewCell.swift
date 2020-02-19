@@ -22,8 +22,6 @@ class ExampleTableViewCell: UITableViewCell {
     lazy var label: UILabel = {
         let label = UILabel(frame: contentView.frame)
         label.font = UIFont.preferredFont(forTextStyle: .headline).bold()
-        label.textColor = Style.shared.preference.textColor
-        label.backgroundColor = Style.shared.preference.backgroundColor
         label.textAlignment = .left
         
         contentView.addSubview(label)
@@ -37,8 +35,8 @@ class ExampleTableViewCell: UITableViewCell {
         super.layoutSubviews()
         
         label.text = example.title
-        label.textColor = Style.shared.preference.textColor
-        label.backgroundColor = Style.shared.preference.backgroundColor
-        contentView.backgroundColor = Style.shared.preference.backgroundColor
+        label.textColor = userInterfaceStyle.textColor
+        label.backgroundColor = userInterfaceStyle.backgroundColor
+        contentView.backgroundColor = userInterfaceStyle.backgroundColor
     }
 }

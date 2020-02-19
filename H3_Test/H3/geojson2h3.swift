@@ -10,10 +10,6 @@ import Turf
 import H3Swift
 import CoreLocation
 
-typealias FeatureProperties = [String : AnyJSONType]?
-typealias CLLocationCoordinates2D = [CLLocationCoordinate2D]
-typealias GeoCoords = [GeoCoord]
-
 enum H3 {
     enum geojson2h3 {
         static func deg2rad(_ number: Double) -> Double {
@@ -22,6 +18,11 @@ enum H3 {
         
         static func rad2deg(_ number: Double) -> Double {
             return number * 180 / .pi
+        }
+        
+        static func km2Radius(_ km: Double, res: Int32) -> Double {
+            let dist = H3Swift.edgeLength(res: res, unit: H3Swift.DistanceUnit.km)
+            return floor(km / dist)
         }
             
         static func flatten(_ arrays: [[String]]) -> [String] {
@@ -41,9 +42,8 @@ enum H3 {
             return a.distance(to: b)
         }
 
-
         static func featureToH3Set(_ feature: FeatureVariant?, _ resolution: Int32) -> [String]? {
-            guard let feature = feature else { return [] }
+            guard let feature = feature else { return nil }
             
             switch feature {
             case .polygonFeature(let polygon):
@@ -101,7 +101,7 @@ enum H3 {
         }
         
         
-        static func coordinatesToH3Index(_ coordinates: [CLLocationCoordinate2D], resolution: Int32) -> [String] {
+        static func polygonToH3Index(_ coordinates: [CLLocationCoordinate2D], resolution: Int32) -> [String] {
             var geoCoords = coordinates.compactMap { (c) -> GeoCoord? in
                     var coordinate = GeoCoord()
                     coordinate.lat = deg2rad(c.latitude)
@@ -113,13 +113,13 @@ enum H3 {
             return h3Poly.polyfill(res: resolution).compactMap { (index) -> String in return index.toString() }
         }
         
-        static func coordinatesToH3Index(_ coordinates: [[CLLocationCoordinate2D]], resolution: Int32) -> [[String]] {
-           return coordinates.compactMap { (c) ->  [String]? in return coordinatesToH3Index(c, resolution: resolution) }
+        static func polygonToH3Index(_ coordinates: [[CLLocationCoordinate2D]], resolution: Int32) -> [[String]] {
+           return coordinates.compactMap { (c) ->  [String]? in return polygonToH3Index(c, resolution: resolution) }
         }
         
         static func multiPolygonToH3Index(_ polygons: MultiPolygonFeature, resolution: Int32) -> [[String]] {
-            return polygons.geometry.coordinates.compactMap { (cooridnates2D) -> [String]?  in
-                return flatten(coordinatesToH3Index(cooridnates2D, resolution: resolution))
+            return polygons.geometry.coordinates.compactMap { cooridnates -> [String]? in
+                return flatten(polygonToH3Index(cooridnates, resolution: resolution))
             }
         }
         
@@ -179,6 +179,11 @@ enum H3 {
     }
 }
 
+typealias FeatureProperties = [String : AnyJSONType]?
+typealias CLLocationCoordinates2D = [CLLocationCoordinate2D]
+typealias GeoCoords = [GeoCoord]
+typealias StringsStrings = [[String]]
+typealias Strings = [String]
 
 /// - NOTE: Convience functions for Coordinartes Translations
 
@@ -238,6 +243,7 @@ extension CLLocationCoordinate2D {
         return geoCoord
     }
 }
+
 extension CLLocationCoordinates2D {
     var geoCoords: [GeoCoord] {
         var asGeoCoords: [GeoCoord] = []
@@ -245,7 +251,7 @@ extension CLLocationCoordinates2D {
         return asGeoCoords
     }
 }
-typealias StringsStrings = [[String]]
+
 extension StringsStrings {
     var h3Indexs: [[H3Index]] {
         var h3Indexs: [[H3Index]] = [[]]
@@ -254,7 +260,6 @@ extension StringsStrings {
     }
 }
 
-typealias Strings = [String]
 extension Strings {
     var h3Indexs: [H3Index] {
         var h3Indexs: [H3Index?] = []
@@ -262,6 +267,7 @@ extension Strings {
         return h3Indexs.filter { return $0 != nil } as! [H3Index]
     }
 }
+
 extension String {
     var h3Index: H3Index? {
         return H3Swift.H3Index.init(string: self)
@@ -280,5 +286,19 @@ extension CLLocation {
         geoCoord.lat = H3.geojson2h3.deg2rad(coordinate.latitude)
         geoCoord.lon = H3.geojson2h3.deg2rad(coordinate.longitude)
         return geoCoord
+    }
+}
+
+extension H3Index {
+    var center: CLLocationCoordinate2D {
+        return H3.geojson2h3.convert(from: self)
+    }
+    
+    var polygonFeature: PolygonFeature? {
+        return featureVariant?.value as? PolygonFeature
+    }
+    
+    var featureVariant: FeatureVariant? {
+        return H3.geojson2h3.h3ToFeature(self)
     }
 }

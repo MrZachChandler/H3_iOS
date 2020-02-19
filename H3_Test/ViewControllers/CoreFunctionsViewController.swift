@@ -155,9 +155,7 @@ class CoreFunctionsViewController: ExampleViewController {
         let res = resolution == 15 ? resolution : resolution + 1
         res == resolution ? resolutionError() : index.children(childRes: res).forEach { layer[$0] = 1 }
         //render hexagons
-        let hex = hexLayers
         renderHexer(layer: layer, style: style, addLineLayer: true)
-        if let l = hex {hexLayers?.append(contentsOf: l)}
     }
     
     func resolutionError() { showWarning(title: "Resolution Error", message: "Choose another resolution") }
@@ -235,13 +233,13 @@ class CoreFunctionsViewController: ExampleViewController {
         }
     }
     
-    override func renderPolygonFeature(_ poly: PolygonFeature, source: MGLShapeSource, style: MGLStyle, addLineLayer: Bool) {
+    func renderPolygonFeature(_ poly: PolygonFeature, source: MGLShapeSource, style: MGLStyle, addLineLayer: Bool) {
         guard let id = poly.identifier?.value else { return }
         let hexLayer = MGLFillStyleLayer(identifier: "fill\(id)", source: source)
         hexLayer.fillColor =  NSExpression(forConstantValue:#colorLiteral(red: 0.9979701638, green: 0.9997151494, blue: 0.8536984324, alpha: 1))
         hexLayer.fillOpacity = NSExpression(forConstantValue: 0.75)
         style.addLayer(hexLayer)
-        hexLayers?.append(hexLayer)
+        hexLayers.append(hexLayer)
                         
 ////                 Create new layer for the line.
         if addLineLayer {
@@ -259,10 +257,43 @@ class CoreFunctionsViewController: ExampleViewController {
             [14: 2, 18: 20])
 
             style.addLayer(lineLayer)
-            hexLayers?.append(lineLayer)
+            hexLayers.append(lineLayer)
         }
         
-        hexLayers?.forEach({$0.isVisible = true})
+        hexLayers.forEach({$0.isVisible = true})
+    }
+    
+    func renderHexer(layer :  [H3Index : Double], style: MGLStyle, sourceId: String = "hex_linear", addLineLayer: Bool = false) {
+        var features : [FeatureVariant] = []
+        
+        layer.forEach { (arg) in
+            let (key , value) = arg
+            var valueJSON = AnyJSONType(value.jsonValue)
+
+            if value.isNaN {
+                valueJSON = AnyJSONType(0)
+            }
+            
+            features.append(H3.geojson2h3.h3ToFeature(key.toString(), ["value": valueJSON]))
+        }
+        
+        let collections = FeatureCollection(features)
+        let data = try! JSONEncoder().encode(collections)
+        let shape = try? MGLShape(data: data, encoding: String.Encoding.utf8.rawValue)
+        let source = MGLShapeSource(identifier: sourceId, shape: shape, options: nil)
+        style.addSource(source)
+        print(String(data: data, encoding: .utf8) ?? "")
+        
+        features.forEach { (feature) in
+            switch feature {
+            case .polygonFeature(let poly):
+                DispatchQueue.main.async { [unowned self] in
+                    self.renderPolygonFeature(poly, source: source, style: style, addLineLayer: addLineLayer)
+                }
+            default:
+                print("unknown feature")
+            }
+        }
     }
     
     func polyfillMap() {
@@ -296,15 +327,13 @@ class CoreFunctionsViewController: ExampleViewController {
         poly.polyfill(res: resolution).forEach { hexs[$0] = Double(arc4random())}
         sources.append(sourceID)
         
-        DispatchQueue.main.async { [unowned self] in
-            let hex = self.hexLayers
-            self.renderHexer(layer: hexs, style: style, sourceId: sourceID, addLineLayer: true)
-            if let l = hex {self.hexLayers?.append(contentsOf: l)}
-            self.mapView.setVisibleCoordinateBounds(coordinateBounds, animated: true)
+        DispatchQueue.main.async { [weak self] in
+            self?.renderHexer(layer: hexs, style: style, sourceId: sourceID, addLineLayer: true)
+            self?.mapView.setVisibleCoordinateBounds(coordinateBounds, animated: true)
             
             //show polygon on top of hexagons
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: { [unowned self] in
-                self.renderSinglePolygon(coordinateBounds)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: {
+                self?.renderSinglePolygon(coordinateBounds)
             })
         }
     }
@@ -348,9 +377,7 @@ class CoreFunctionsViewController: ExampleViewController {
         
          
          DispatchQueue.main.async { [unowned self] in
-             let hex = self.hexLayers
              self.renderHexer(layer: hexs, style: style, sourceId: sourceID, addLineLayer: true)
-             if let l = hex {self.hexLayers?.append(contentsOf: l)}
              self.mapView.setVisibleCoordinateBounds(outerBounds, animated: true)
              
              //show polygon on top of hexagons
@@ -386,92 +413,11 @@ class CoreFunctionsViewController: ExampleViewController {
         style.addSource(source)
         style.addLayer(polyLayer)
         
-        hexLayers?.append(polyLayer)
+        hexLayers.append(polyLayer)
         polygonIDs.append(polyLayerID)
         sources.append(contentsOf: [polyLayerID, sourceID])
     }
 }
-
-extension CoreFunctionsViewController : UIGestureRecognizerDelegate  {
-    func setupTapGestures() {
-        // Add a double tap gesture recognizer. This gesture is used for double
-        // tapping on hexagons and then zooming in so the cluster expands to its
-        // children.
-        let doubleTap = UITapGestureRecognizer(target: self, action: #selector(handleMapTap(sender:)))
-        doubleTap.numberOfTapsRequired = 2
-        doubleTap.delegate = self
-         
-        // It's important that this new double tap fails before the map view's
-        // built-in gesture can be recognized. This is to prevent the map's gesture from
-        // overriding this new gesture (and then not detecting a cluster that had been
-        // tapped on).
-        for recognizer in mapView.gestureRecognizers!
-        where (recognizer as? UITapGestureRecognizer)?.numberOfTapsRequired == 2 {
-            recognizer.require(toFail: doubleTap)
-        }
-
-        mapView.addGestureRecognizer(doubleTap)
-    }
-    
-    @objc func handleMapTap(sender: UITapGestureRecognizer) {
-        guard let style = mapView.style else { return }
-        guard sender.state == .ended else { return }
-     
-//        showPopup(false, animated: false)
-        let point = sender.location(in: mapView)
-        let features = mapView.visibleFeatures(at: point)
-         
-        // Pick the first feature (which may be a port or a cluster), ideally selecting
-        // the one nearest nearest one to the touch point.
-        guard let feature = features.first else { return }
-        guard let polygon = feature as? MGLPolygonFeature else { return }
-        guard let indexString = polygon.attribute(forKey: "hex") as? String else { return }
-
-        // create index from properties
-        let index = H3Index(string: indexString)
-        // create my layer
-        var layer : [H3Index:Double] = [:]
-        // create children
-        let res = (resolution == 0 || resolution == 15) ? resolution : resolution + 1
-        res == resolution ? resolutionError() : index.children(childRes: res).forEach { layer[$0] = 1 }
-        //render hexagons
-        let hex = hexLayers
-        let sourceID = "\(indexString)children"
-        renderHexer(layer: layer, style: style, sourceId: sourceID, addLineLayer: true)
-        sources.append(sourceID)
-        if let l = hex { hexLayers?.append(contentsOf: l) }
-        
-//        let description: String
-//        let color: UIColor
-
-     
-//        popup = popup(at: feature.coordinate, with: description, textColor: color)
-//        showPopup(true, animated: true)
-    }
-    
-    func mapView(_ mapView: MGLMapView, didSelect annotation: MGLAnnotation) {
-        guard let style = mapView.style else { return }
-        guard let polygon = annotation as? MGLPolygonFeature else { return }
-        guard let indexString = polygon.attribute(forKey: "hex") as? String else { return }
-
-        // create index from properties
-        let index = H3Index(string: indexString)
-        // create my layer
-        var layer : [H3Index:Double] = [:]
-        // create children
-        let res = (resolution == 0 || resolution == 15) ? resolution : resolution + 1
-        res == resolution ? resolutionError() : index.children(childRes: res).forEach { layer[$0] = 1 }
-
-        let hex = hexLayers
-        let sourceID = "\(indexString)children"
-        
-        //render hexagons
-        renderHexer(layer: layer, style: style, sourceId: sourceID, addLineLayer: true)
-        sources.append(sourceID)
-        if let l = hex { hexLayers?.append(contentsOf: l) }
-    }
-}
-
 
 extension MGLCoordinateBounds {
     var outerBounds: MGLCoordinateBounds {
