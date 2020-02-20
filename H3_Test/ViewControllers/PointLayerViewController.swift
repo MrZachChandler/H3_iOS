@@ -91,27 +91,19 @@ class PointLayerViewController: ExampleViewController {
     }
     
     func renderPolygonFeature(source: MGLShapeSource, style: MGLStyle) {
-        let hexLayer = MGLFillStyleLayer(identifier: source.identifier, source: source)
-        hexLayer.fillColor = NSExpression(format: "mgl_step:from:stops:(value, %@, %@)", UIColor(red: 13/255, green: 35/255, blue: 69/255, alpha: 1), userInterfaceStyle.shortRange)
-        hexLayer.fillOutlineColor = NSExpression(forConstantValue: userInterfaceStyle.textColor)
-        hexLayer.fillOpacity = NSExpression(forConstantValue: 0.75)
-        
-        DispatchQueue.main.async { style.addLayer(hexLayer) }
-        
-        hexLayers.append(hexLayer)
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            let hexLayer = MGLFillStyleLayer(identifier: source.identifier, source: source)
+            hexLayer.fillColor = NSExpression(format: "mgl_step:from:stops:(value, %@, %@)", UIColor(red: 13/255, green: 35/255, blue: 69/255, alpha: 1), self.userInterfaceStyle.shortRange)
+            hexLayer.fillOutlineColor = NSExpression(forConstantValue: self.userInterfaceStyle.textColor)
+            hexLayer.fillOpacity = NSExpression(forConstantValue: 0.75)
+            style.addLayer(hexLayer)
+            self.hexLayers.append(hexLayer)
+        }
     }
     
     func renderHexagons(for points: PointsLayer, layer :  [H3Index : Double], style: MGLStyle, sourceId: String = "hex_linear") {
-        var features : [FeatureVariant] = []
-        
-        layer.forEach { (key , value) in
-            let valueJSON = AnyJSONType(value)
-            let hex = AnyJSONType(key.toString())
-            features.append(H3.geojson2h3.h3ToFeature(key.toString(), ["value": valueJSON, "hex": hex]))
-        }
-        
-        let collections = FeatureCollection(features)
-        let data = try! JSONEncoder().encode(collections)
+        guard let data = try? JSONEncoder().encode(layerToFeatureCollection(layer: layer, valueKey: "value")) else { return }
         let shape = try? MGLShape(data: data, encoding: String.Encoding.utf8.rawValue)
         
         guard let source = style.source(withIdentifier: sourceId) as? MGLShapeSource else {
@@ -223,7 +215,7 @@ class PointLayerViewController: ExampleViewController {
 /// - NOTE: MAP FUNCTIONS
 extension PointLayerViewController {
     
-    func mapView(_ mapView: MGLMapView, didFinishLoading style: MGLStyle) {
+    override func mapView(_ mapView: MGLMapView, didFinishLoading style: MGLStyle) {
         addClusterData(mapView, didFinishLoading: style)
     }
     

@@ -147,7 +147,7 @@ extension H3MapDelegate {
             }
         }
    
-        return normalizeData(layer)
+        return normalizeData(layer, normalize: normalize)
     }
     
     func normalizeData(_ layer: [H3Index : Double], zeroBaseLine: Bool = false, normalize: MinMax? = nil) -> [H3Index:Double] {

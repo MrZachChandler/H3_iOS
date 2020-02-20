@@ -11,14 +11,16 @@ import H3Swift
 import CoreLocation
 
 enum H3 {
+    
+    static func deg2rad(_ number: Double) -> Double {
+        return number * .pi / 180
+    }
+    
+    static func rad2deg(_ number: Double) -> Double {
+        return number * 180 / .pi
+    }
+    
     enum geojson2h3 {
-        static func deg2rad(_ number: Double) -> Double {
-            return number * .pi / 180
-        }
-        
-        static func rad2deg(_ number: Double) -> Double {
-            return number * 180 / .pi
-        }
         
         static func km2Radius(_ km: Double, res: Int32) -> Double {
             let dist = H3Swift.edgeLength(res: res, unit: H3Swift.DistanceUnit.km)
@@ -182,15 +184,15 @@ enum H3 {
 typealias FeatureProperties = [String : AnyJSONType]?
 typealias CLLocationCoordinates2D = [CLLocationCoordinate2D]
 typealias GeoCoords = [GeoCoord]
-typealias StringsStrings = [[String]]
+typealias Strings2D = [[String]]
 typealias Strings = [String]
 
 /// - NOTE: Convience functions for Coordinartes Translations
 
 extension GeoCoord {
     var coordinate: CLLocationCoordinate2D {
-        let latitude =  H3.geojson2h3.rad2deg(constrainLat(lati: lat))
-        let longitude = H3.geojson2h3.rad2deg(constrainLng(lng: lon))
+        let latitude =  H3.rad2deg(constrainLat(lati: lat))
+        let longitude = H3.rad2deg(constrainLng(lng: lon))
         
         return CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
     }
@@ -238,8 +240,8 @@ extension GeoCoords {
 extension CLLocationCoordinate2D {
     var geoCoord: GeoCoord {
         var geoCoord = GeoCoord()
-        geoCoord.lat = H3.geojson2h3.deg2rad(latitude)
-        geoCoord.lon = H3.geojson2h3.deg2rad(longitude)
+        geoCoord.lat = H3.deg2rad(latitude)
+        geoCoord.lon = H3.deg2rad(longitude)
         return geoCoord
     }
 }
@@ -252,7 +254,7 @@ extension CLLocationCoordinates2D {
     }
 }
 
-extension StringsStrings {
+extension Strings2D {
     var h3Indexs: [[H3Index]] {
         var h3Indexs: [[H3Index]] = [[]]
         forEach{h3Indexs.append($0.h3Indexs)}
@@ -283,8 +285,8 @@ extension Double {
 extension CLLocation {
     var geoCoord: GeoCoord {
         var geoCoord = GeoCoord()
-        geoCoord.lat = H3.geojson2h3.deg2rad(coordinate.latitude)
-        geoCoord.lon = H3.geojson2h3.deg2rad(coordinate.longitude)
+        geoCoord.lat = H3.deg2rad(coordinate.latitude)
+        geoCoord.lon = H3.deg2rad(coordinate.longitude)
         return geoCoord
     }
 }

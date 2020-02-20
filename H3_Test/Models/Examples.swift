@@ -13,24 +13,26 @@ typealias Examples = [Example]
 
 struct Example {
     var title: String
-    var type: ExampleType
+    var type: TutorialType
 }
 
 extension Example {
     static var examples: Examples {
+        let render = Example(title: "Rendering Hexagons", type: .renderingHexagons)
         let point = Example(title: "Point Layer", type: .pointLayer)
         let core = Example(title: "Core Functions", type: .core)
         let polygon = Example(title: "Polygon Layer", type: .polygonLayer)
         let analysis = Example(title: "Analysis", type: .analysis)
-        
-        return [core, point, polygon, analysis]
+
+        return [core, render, point, polygon, analysis]
     }
     
-    enum ExampleType {
+    enum TutorialType {
         case pointLayer
         case polygonLayer
         case analysis
         case core
+        case renderingHexagons
     }
     
     var viewController: ExampleViewController {
@@ -45,6 +47,8 @@ extension Example {
             vc = ExampleViewController()
         case .core:
             vc = CoreFunctionsViewController()
+        case .renderingHexagons:
+            vc = RenderingHexagonsViewController()
         }
         
         vc.example = self

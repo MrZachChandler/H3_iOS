@@ -5,3 +5,5 @@ github "mapbox/turf-swift" ~> 0.3
 github "mapbox/mapbox-events-ios" ~> 0.10
 github "xmartlabs/Eureka" ~> 5.0
 github "Daltron/NotificationBanner" "master"
+github "swiftcsv/SwiftCSV"
+

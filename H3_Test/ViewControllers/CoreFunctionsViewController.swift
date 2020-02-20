@@ -253,8 +253,7 @@ class CoreFunctionsViewController: ExampleViewController {
             lineLayer.lineColor =  NSExpression(forConstantValue:  #colorLiteral(red: 0.1020374969, green: 0.2753289044, blue: 0.5405613184, alpha: 1))
 
             // Use `NSExpression` to smoothly adjust the line width from 2pt to 20pt between zoom levels 14 and 18. The `interpolationBase` parameter allows the values to interpolate along an exponential curve.
-            lineLayer.lineWidth = NSExpression(format: "mgl_interpolate:withCurveType:parameters:stops:($zoomLevel, 'linear', nil, %@)",
-            [14: 2, 18: 20])
+            lineLayer.lineWidth = NSExpression(format: "mgl_interpolate:withCurveType:parameters:stops:($zoomLevel, 'linear', nil, %@)", [14: 2, 18: 20])
 
             style.addLayer(lineLayer)
             hexLayers.append(lineLayer)

@@ -10,7 +10,6 @@
 		60331BDA23DE1EC1002714BB /* LandingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60331BD923DE1EC1002714BB /* LandingViewController.swift */; };
 		60331BDD23DE20DB002714BB /* Examples.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60331BDC23DE20DB002714BB /* Examples.swift */; };
 		60331BE023DE2120002714BB /* ExampleTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60331BDF23DE2120002714BB /* ExampleTableViewCell.swift */; };
-		60331BE323DE21F2002714BB /* Style.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60331BE223DE21F2002714BB /* Style.swift */; };
 		60331BE523DE2C15002714BB /* ExampleViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60331BE423DE2C15002714BB /* ExampleViewController.swift */; };
 		60331C0623DE3836002714BB /* geojson2h3.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60331C0523DE3836002714BB /* geojson2h3.swift */; };
 		60331C1723DE3C3F002714BB /* Eureka.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 60331C0923DE3C09002714BB /* Eureka.framework */; };
@@ -38,6 +37,7 @@
 		60911C03237702BF0077F33B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 60911C02237702BF0077F33B /* Assets.xcassets */; };
 		60911C06237702BF0077F33B /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 60911C04237702BF0077F33B /* LaunchScreen.storyboard */; };
 		60911C10237710220077F33B /* MARTA_Stops.geojson in Resources */ = {isa = PBXBuildFile; fileRef = 60911C0F237710220077F33B /* MARTA_Stops.geojson */; };
+		60A984DE23FEDE3500540BFA /* RenderingHexagonsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60A984DD23FEDE3500540BFA /* RenderingHexagonsViewController.swift */; };
 		60C5165723DF84E0003EF59E /* CoreFunctionsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60331C2523DE46F3002714BB /* CoreFunctionsViewController.swift */; };
 /* End PBXBuildFile section */
 
@@ -65,7 +65,6 @@
 		60331BD923DE1EC1002714BB /* LandingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LandingViewController.swift; sourceTree = "<group>"; };
 		60331BDC23DE20DB002714BB /* Examples.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Examples.swift; sourceTree = "<group>"; };
 		60331BDF23DE2120002714BB /* ExampleTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExampleTableViewCell.swift; sourceTree = "<group>"; };
-		60331BE223DE21F2002714BB /* Style.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Style.swift; sourceTree = "<group>"; };
 		60331BE423DE2C15002714BB /* ExampleViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExampleViewController.swift; sourceTree = "<group>"; };
 		60331C0523DE3836002714BB /* geojson2h3.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = geojson2h3.swift; sourceTree = "<group>"; };
 		60331C0923DE3C09002714BB /* Eureka.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Eureka.framework; path = Carthage/Build/iOS/Eureka.framework; sourceTree = "<group>"; };
@@ -89,6 +88,7 @@
 		60911C05237702BF0077F33B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		60911C07237702BF0077F33B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		60911C0F237710220077F33B /* MARTA_Stops.geojson */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = MARTA_Stops.geojson; sourceTree = "<group>"; };
+		60A984DD23FEDE3500540BFA /* RenderingHexagonsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenderingHexagonsViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -112,11 +112,11 @@
 		60331BD823DE1E95002714BB /* ViewControllers */ = {
 			isa = PBXGroup;
 			children = (
-				60331BD923DE1EC1002714BB /* LandingViewController.swift */,
 				60331BE423DE2C15002714BB /* ExampleViewController.swift */,
 				60331C2523DE46F3002714BB /* CoreFunctionsViewController.swift */,
 				604A7FDF23EDEBBC0049B2D1 /* PointLayerViewController.swift */,
 				6058CA6E23EEA53B0083A6B5 /* PolygonViewController.swift */,
+				60A984DD23FEDE3500540BFA /* RenderingHexagonsViewController.swift */,
 			);
 			path = ViewControllers;
 			sourceTree = "<group>";
@@ -140,7 +140,6 @@
 		60331BE123DE21E6002714BB /* Util */ = {
 			isa = PBXGroup;
 			children = (
-				60331BE223DE21F2002714BB /* Style.swift */,
 				6079A02123FAE7B2007844A9 /* Extensions.swift */,
 			);
 			path = Util;
@@ -184,6 +183,7 @@
 				60911C17237715D20077F33B /* files */,
 				60911BF9237702BD0077F33B /* AppDelegate.swift */,
 				60911BFB237702BD0077F33B /* SceneDelegate.swift */,
+				60331BD923DE1EC1002714BB /* LandingViewController.swift */,
 				60911BFF237702BD0077F33B /* Main.storyboard */,
 				60911C02237702BF0077F33B /* Assets.xcassets */,
 				60911C04237702BF0077F33B /* LaunchScreen.storyboard */,
@@ -327,10 +327,10 @@
 				60331BE023DE2120002714BB /* ExampleTableViewCell.swift in Sources */,
 				60911BFC237702BD0077F33B /* SceneDelegate.swift in Sources */,
 				60331BDA23DE1EC1002714BB /* LandingViewController.swift in Sources */,
-				60331BE323DE21F2002714BB /* Style.swift in Sources */,
 				604A7FDE23EDE0C10049B2D1 /* H3MapDelegate.swift in Sources */,
 				6058CA6F23EEA53B0083A6B5 /* PolygonViewController.swift in Sources */,
 				60331BE523DE2C15002714BB /* ExampleViewController.swift in Sources */,
+				60A984DE23FEDE3500540BFA /* RenderingHexagonsViewController.swift in Sources */,
 				60C5165723DF84E0003EF59E /* CoreFunctionsViewController.swift in Sources */,
 				6079A02223FAE7B2007844A9 /* Extensions.swift in Sources */,
 			);
