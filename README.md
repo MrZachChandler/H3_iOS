@@ -2,7 +2,7 @@
 
 # H3_iOS
 
-The `h3_iOS` library provides a pure-Swift version of the [H3 Core Library](https://github.com/uber/h3), a hexagon-based geographic grid system. It can be used either in Node >= 6 or in the browser. The core library is transpiled from C using [emscripten](http://kripken.github.io/emscripten-site), offering full parity with the C API and highly efficient operations.
+The `h3_iOS` library provides a pure-Swift version of the [H3 Core Library](https://github.com/uber/h3), a hexagon-based geographic grid system.
 
 For more information on H3 and for the full API documentation, please see the [H3 Documentation](https://uber.github.io/h3/).
 
